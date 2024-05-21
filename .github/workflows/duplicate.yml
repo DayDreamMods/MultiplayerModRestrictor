@@ -47,9 +47,9 @@ jobs:
         NUGET_API_TOKEN: ${{ env.NUGET_API_TOKEN }}
         GH_API_TOKEN: ${{ env.GH_API_TOKEN }}
       run: |
-        gh secret set TCLI_API_TOKEN -b"$TCLI_API_TOKEN" -R $GITHUB_REPOSITORY/$REPO_NAME
-        gh secret set NUGET_API_TOKEN -b"$NUGET_API_TOKEN" -R $GITHUB_REPOSITORY/$REPO_NAME
-        gh secret set GH_API_TOKEN -b"$GH_API_TOKEN" -R $GITHUB_REPOSITORY/$REPO_NAME
+        gh secret set TCLI_API_TOKEN --body "$TCLI_API_TOKEN" --app actions
+        gh secret set NUGET_API_TOKEN --body "$NUGET_API_TOKEN" --app actions
+        gh secret set GH_API_TOKEN --body "$GH_API_TOKEN" --app actions
 
     - name: Copy labels from template repository
       env:
