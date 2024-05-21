@@ -44,6 +44,13 @@ jobs:
         gh secret set NUGET_API_TOKEN --body "${{ secrets.NUGET_API_TOKEN }}" -R ${{ env.NEW_REPO_FULL_NAME }}
         gh secret set GH_API_TOKEN --body "${{ secrets.GH_API_TOKEN }}" -R ${{ env.NEW_REPO_FULL_NAME }}
 
+    - name: Delete default labels
+      run: |
+        DEFAULT_LABELS=$(gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels --jq '.[].name')
+        for LABEL in $DEFAULT_LABELS; do
+          gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels/$LABEL -X DELETE
+        done
+
     - name: Copy labels from template repository
       run: |
         LABELS=$(gh api repos/${{ github.repository }}/labels --jq '.[] | @base64')
