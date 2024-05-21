@@ -57,7 +57,7 @@
     >
         <Exec Command="dotnet tcli build --config-path $(MSBuildProjectDirectory)\..\ts-assets\thunderstore.toml --package-version $(PlainVersion)" />
         <ItemGroup>
-            <FilesToRename Include="$(MSBuildProjectDirectory)\..\dist\*-$(PlainVersion).zip" />
+            <FilesToRename Include="$(MSBuildProjectDirectory)\..\*-$(PlainVersion).zip" />
         </ItemGroup>
         <Move SourceFiles="@(FilesToRename)" DestinationFiles="@(FilesToRename -&gt; Replace($(PlainVersion), $(MinVerVersion)))" />
     </Target>
