@@ -27,7 +27,6 @@ jobs:
         REPO_NAME: ${{ env.REPO_NAME }}
         GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
-        TEMPLATE_REPO="wwwDayDream/Workflow-Template"
         DESCRIPTION=""
         
         # Create the new repository from the template
