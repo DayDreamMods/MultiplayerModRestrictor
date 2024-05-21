@@ -25,8 +25,10 @@ jobs:
       id: create-repo
       run: |
         DESCRIPTION="Description for the new repo"
-        NEW_REPO=$(gh repo create "${{ env.REPO_NAME }}" --template ${{ github.repository }} --public --description "$DESCRIPTION" --json name,owner)
-        echo "NEW_REPO_FULL_NAME=$(echo $NEW_REPO | jq -r '.owner.login + \"/\" + .name')" >> $GITHUB_ENV
+        NEW_REPO_URL=$(gh repo create "${{ env.REPO_NAME }}" --template ${{ github.repository }} --public --description "$DESCRIPTION" --json url --jq .url)
+        NEW_REPO_OWNER=$(echo $NEW_REPO_URL | cut -d'/' -f4)
+        NEW_REPO_NAME=$(echo $NEW_REPO_URL | cut -d'/' -f5)
+        echo "NEW_REPO_FULL_NAME=$NEW_REPO_OWNER/$NEW_REPO_NAME" >> $GITHUB_ENV
 
     - name: Retrieve secrets
       id: retrieve-secrets
