@@ -7,12 +7,12 @@ repository = "https://thunderstore.io"
 [package]
 namespace = "www_Day_Dream"
 name = "MultiplayerModRestrictor"
-description = ""
-websiteUrl = ""
+description = "A Last Train Outta' Wormtown plugin that facilitates other plugins restricting multiplayer access by mod versioning."
+websiteUrl = "https://github.com/wwwDayDream/MultiplayerModRestrictor"
 containsNsfwContent = false
 
 [package.dependencies]
-BepInEx-BepInExPack = ""
+BepInEx_Wormtown-BepInExPack = "5.4.22"
 
 [build]
 icon = "icon.png"
