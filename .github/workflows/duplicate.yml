@@ -47,7 +47,7 @@ jobs:
     - name: Copy labels from template repository
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        TEMPLATE_REPO: "owner/template-repo"
+        TEMPLATE_REPO: "wwwDayDream/Workflow-Template"
         REPO_NAME: ${{ env.REPO_NAME }}
       run: |
         # Fetch labels from the template repository
