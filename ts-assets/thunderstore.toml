@@ -13,6 +13,7 @@ containsNsfwContent = false
 
 [package.dependencies]
 BepInEx_Wormtown-BepInExPack = "5.4.22"
+www_Day_Dream-CessilCellsCeaChells = "0.3.5"
 
 [build]
 icon = "icon.png"
