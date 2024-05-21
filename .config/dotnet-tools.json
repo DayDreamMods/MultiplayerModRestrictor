@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "tcli": {
+      "version": "0.2.3",
+      "commands": [
+        "tcli"
+      ]
+    },
+    "jetbrains.refasmer.clitool": {
+      "version": "1.0.33",
+      "commands": [
+        "refasmer"
+      ]
+    }
+  }
+}
