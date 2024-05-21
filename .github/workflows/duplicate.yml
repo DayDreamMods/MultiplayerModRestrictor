@@ -1,0 +1,84 @@
+name: Create New Repo from Template
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  create-repo:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up GitHub CLI
+      uses: actions/setup-gh-cli@v1
+
+    - name: Authenticate GitHub CLI
+      run: echo "${{ secrets.GH_TOKEN }}" | gh auth login --with-token
+
+    - name: Extract release title and ID
+      id: extract-info
+      run: |
+        echo "REPO_NAME=${{ github.event.release.name }}" >> $GITHUB_ENV
+        echo "RELEASE_ID=${{ github.event.release.id }}" >> $GITHUB_ENV
+
+    - name: Create new repository from template
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        REPO_NAME: ${{ env.REPO_NAME }}
+      run: |
+        TEMPLATE_REPO="wwwDayDream/Workflow-Template"
+        DESCRIPTION=""
+        
+        # Create the new repository from the template
+        gh repo create "$REPO_NAME" --template $TEMPLATE_REPO --public --description "$DESCRIPTION"
+
+    - name: Retrieve TCLI_API_TOKEN secret
+      id: retrieve-secret
+      run: echo "TCLI_API_TOKEN=${{ secrets.TCLI_API_TOKEN }}" >> $GITHUB_ENV
+
+    - name: Set TCLI_API_TOKEN secret in the new repository
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        REPO_NAME: ${{ env.REPO_NAME }}
+        TCLI_API_TOKEN: ${{ env.TCLI_API_TOKEN }}
+      run: |
+        gh secret set TCLI_API_TOKEN -b"$TCLI_API_TOKEN" -R $GITHUB_REPOSITORY/$REPO_NAME
+
+    - name: Copy labels from template repository
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        TEMPLATE_REPO: "owner/template-repo"
+        REPO_NAME: ${{ env.REPO_NAME }}
+      run: |
+        # Fetch labels from the template repository
+        LABELS=$(gh api repos/$TEMPLATE_REPO/labels --jq '.[] | @base64')
+
+        # Iterate over each label and create it in the new repository
+        for LABEL in $LABELS; do
+          LABEL_DATA=$(echo $LABEL | base64 --decode)
+          NAME=$(echo $LABEL_DATA | jq -r '.name')
+          COLOR=$(echo $LABEL_DATA | jq -r '.color')
+          DESCRIPTION=$(echo $LABEL_DATA | jq -r '.description')
+          gh api repos/$GITHUB_REPOSITORY/$REPO_NAME/labels -f name="$NAME" -f color="$COLOR" -f description="$DESCRIPTION"
+        done
+
+    - name: Update release description with new repo link
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        REPO_NAME: ${{ env.REPO_NAME }}
+        RELEASE_ID: ${{ env.RELEASE_ID }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+      run: |
+        NEW_REPO_URL="https://github.com/$GITHUB_REPOSITORY/$REPO_NAME"
+        RELEASE_DESCRIPTION="New repository created: [$REPO_NAME]($NEW_REPO_URL)"
+        gh api \
+          -X PATCH \
+          -H "Accept: application/vnd.github+json" \
+          repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID \
+          -f body="$RELEASE_DESCRIPTION"
+
+    - name: Confirm repository creation
+      run: gh repo list --limit 5
