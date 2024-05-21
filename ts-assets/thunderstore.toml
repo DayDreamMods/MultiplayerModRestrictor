@@ -17,7 +17,7 @@ BepInEx-BepInExPack = ""
 [build]
 icon = "icon.png"
 readme = "./TS-README.md"
-outdir = "../../"
+outdir = "../../../"
 
 [[build.copy]]
 source = "../LICENSE"
