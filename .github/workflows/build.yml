@@ -73,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: thunderstore-build
-          path: /*.zip
+          path: /*/*.zip
   upload-release-artifacts:
     if: github.event.release
     needs: build
