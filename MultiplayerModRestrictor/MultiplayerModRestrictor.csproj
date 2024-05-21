@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyName>wwwDayDream.$(MSBuildProjectName)</AssemblyName>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CessilCellsCeaChells" Version="0.3.5" PrivateAssets="all"/>
+        <PackageReference Include="ShoddyGameLibs" Version="1.3.7"
+                                 GameFilesDir="$(STEAMAPPS)Last Train Outta' Wormtown"
+                                 BuildGameLibs="false" BuildFromGameLibs="true"
+                                 CommonLibs="true" UnityVersion="2021.3.28" UseMinVer="true"/>
+
+        <Reference Include="..\..\BepInEx\cache\Cessil.Assembly-CSharp" ShoddyGameLib="true" Publicize="true"/>
+        <Reference Include="Newtonsoft.Json" ShoddyGameLib="true"/>
+        <Reference Include="Unity.Netcode.Runtime" ShoddyGameLib="true"/>
+    </ItemGroup>
+
+</Project>
