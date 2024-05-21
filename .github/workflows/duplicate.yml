@@ -46,9 +46,12 @@ jobs:
 
     - name: Delete default labels
       run: |
+        # Get the default labels from the new repository
         DEFAULT_LABELS=$(gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels --jq '.[].name')
+        
+        # Iterate over each label and delete it
         for LABEL in $DEFAULT_LABELS; do
-          gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels/$LABEL -X DELETE
+          gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels/$(echo $LABEL | jq -r @uri) -X DELETE
         done
 
     - name: Copy labels from template repository
