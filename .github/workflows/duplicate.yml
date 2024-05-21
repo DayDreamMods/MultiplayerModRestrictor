@@ -22,66 +22,42 @@ jobs:
         echo "RELEASE_ID=${{ github.event.release.id }}" >> $GITHUB_ENV
 
     - name: Create new repository from template
-      env:
-        GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
-        REPO_NAME: ${{ env.REPO_NAME }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
-        DESCRIPTION=""
-        
-        # Create the new repository from the template
-        gh repo create "$REPO_NAME" --template $GITHUB_REPOSITORY --public --description "$DESCRIPTION"
+        DESCRIPTION="Description for the new repo"
+        gh repo create "${{ env.REPO_NAME }}" --template ${{ github.repository }} --public --description "$DESCRIPTION"
 
     - name: Retrieve secrets
-      id: retrieve-secret
+      id: retrieve-secrets
       run: |
         echo "TCLI_API_TOKEN=${{ secrets.TCLI_API_TOKEN }}" >> $GITHUB_ENV
         echo "NUGET_API_TOKEN=${{ secrets.NUGET_API_TOKEN }}" >> $GITHUB_ENV
         echo "GH_API_TOKEN=${{ secrets.GH_API_TOKEN }}" >> $GITHUB_ENV
 
     - name: Set secrets in the new repository
-      env:
-        GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
-        REPO_NAME: ${{ env.REPO_NAME }}
-        TCLI_API_TOKEN: ${{ env.TCLI_API_TOKEN }}
-        NUGET_API_TOKEN: ${{ env.NUGET_API_TOKEN }}
-        GH_API_TOKEN: ${{ env.GH_API_TOKEN }}
       run: |
-        gh secret set TCLI_API_TOKEN --body "$TCLI_API_TOKEN" --app actions
-        gh secret set NUGET_API_TOKEN --body "$NUGET_API_TOKEN" --app actions
-        gh secret set GH_API_TOKEN --body "$GH_API_TOKEN" --app actions
+        gh secret set TCLI_API_TOKEN --body "${{ secrets.TCLI_API_TOKEN }}" -R ${{ github.repository }}/${{ env.REPO_NAME }}
+        gh secret set NUGET_API_TOKEN --body "${{ secrets.NUGET_API_TOKEN }}" -R ${{ github.repository }}/${{ env.REPO_NAME }}
+        gh secret set GH_API_TOKEN --body "${{ secrets.GH_API_TOKEN }}" -R ${{ github.repository }}/${{ env.REPO_NAME }}
 
     - name: Copy labels from template repository
-      env:
-        GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        REPO_NAME: ${{ env.REPO_NAME }}
       run: |
-        # Fetch labels from the current repository
-        LABELS=$(gh api repos/$GITHUB_REPOSITORY/labels --jq '.[] | @base64')
-
-        # Iterate over each label and create it in the new repository
+        LABELS=$(gh api repos/${{ github.repository }}/labels --jq '.[] | @base64')
         for LABEL in $LABELS; do
           LABEL_DATA=$(echo $LABEL | base64 --decode)
           NAME=$(echo $LABEL_DATA | jq -r '.name')
           COLOR=$(echo $LABEL_DATA | jq -r '.color')
           DESCRIPTION=$(echo $LABEL_DATA | jq -r '.description')
-          gh api repos/$GITHUB_REPOSITORY/$REPO_NAME/labels -f name="$NAME" -f color="$COLOR" -f description="$DESCRIPTION"
+          gh api repos/${{ github.repository }}/${{ env.REPO_NAME }}/labels -f name="$NAME" -f color="$COLOR" -f description="$DESCRIPTION"
         done
 
     - name: Update release description with new repo link
-      env:
-        GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
-        REPO_NAME: ${{ env.REPO_NAME }}
-        RELEASE_ID: ${{ env.RELEASE_ID }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
-        NEW_REPO_URL="https://github.com/$GITHUB_REPOSITORY/$REPO_NAME"
-        RELEASE_DESCRIPTION="New repository created: [$REPO_NAME]($NEW_REPO_URL)"
+        NEW_REPO_URL="https://github.com/${{ github.repository }}/${{ env.REPO_NAME }}"
+        RELEASE_DESCRIPTION="New repository created: [${{ env.REPO_NAME }}]($NEW_REPO_URL)"
         gh api \
           -X PATCH \
           -H "Accept: application/vnd.github+json" \
-          repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID \
+          repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }} \
           -f body="$RELEASE_DESCRIPTION"
 
     - name: Confirm repository creation
