@@ -41,7 +41,7 @@ jobs:
 
     - name: Set secrets in the new repository
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
         REPO_NAME: ${{ env.REPO_NAME }}
         TCLI_API_TOKEN: ${{ env.TCLI_API_TOKEN }}
         NUGET_API_TOKEN: ${{ env.NUGET_API_TOKEN }}
@@ -53,7 +53,7 @@ jobs:
 
     - name: Copy labels from template repository
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         REPO_NAME: ${{ env.REPO_NAME }}
       run: |
@@ -71,7 +71,7 @@ jobs:
 
     - name: Update release description with new repo link
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
         REPO_NAME: ${{ env.REPO_NAME }}
         RELEASE_ID: ${{ env.RELEASE_ID }}
         GITHUB_REPOSITORY: ${{ github.repository }}
