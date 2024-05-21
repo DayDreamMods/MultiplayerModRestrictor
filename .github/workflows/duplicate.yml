@@ -13,7 +13,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Authenticate GitHub CLI
-      run: echo "${{ secrets.GH_TOKEN }}" | gh auth login --with-token
+      run: echo "${{ secrets.GH_API }}" | gh auth login --with-token
 
     - name: Extract release title and ID
       id: extract-info
@@ -23,35 +23,43 @@ jobs:
 
     - name: Create new repository from template
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_TOKEN: ${{ secrets.GH_API }}
         REPO_NAME: ${{ env.REPO_NAME }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
-        TEMPLATE_REPO="owner/template-repo"
-        DESCRIPTION="Description for the new repo"
+        TEMPLATE_REPO="wwwDayDream/Workflow-Template"
+        DESCRIPTION=""
         
         # Create the new repository from the template
-        gh repo create "$REPO_NAME" --template $TEMPLATE_REPO --public --description "$DESCRIPTION"
+        gh repo create "$REPO_NAME" --template $GITHUB_REPOSITORY --public --description "$DESCRIPTION"
 
-    - name: Retrieve TCLI_API_TOKEN secret
+    - name: Retrieve secrets
       id: retrieve-secret
-      run: echo "TCLI_API_TOKEN=${{ secrets.TCLI_API_TOKEN }}" >> $GITHUB_ENV
+      run: |
+        echo "TCLI_API_TOKEN=${{ secrets.TCLI_API_TOKEN }}" >> $GITHUB_ENV
+        echo "NUGET_API_TOKEN=${{ secrets.NUGET_API_TOKEN }}" >> $GITHUB_ENV
+        echo "GH_API_TOKEN=${{ secrets.GH_API_TOKEN }}" >> $GITHUB_ENV
 
-    - name: Set TCLI_API_TOKEN secret in the new repository
+    - name: Set secrets in the new repository
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         REPO_NAME: ${{ env.REPO_NAME }}
         TCLI_API_TOKEN: ${{ env.TCLI_API_TOKEN }}
+        NUGET_API_TOKEN: ${{ env.NUGET_API_TOKEN }}
+        GH_API_TOKEN: ${{ env.GH_API_TOKEN }}
       run: |
         gh secret set TCLI_API_TOKEN -b"$TCLI_API_TOKEN" -R $GITHUB_REPOSITORY/$REPO_NAME
+        gh secret set NUGET_API_TOKEN -b"$NUGET_API_TOKEN" -R $GITHUB_REPOSITORY/$REPO_NAME
+        gh secret set GH_API_TOKEN -b"$GH_API_TOKEN" -R $GITHUB_REPOSITORY/$REPO_NAME
 
     - name: Copy labels from template repository
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        TEMPLATE_REPO: "wwwDayDream/Workflow-Template"
+        GITHUB_REPOSITORY: ${{ github.repository }}
         REPO_NAME: ${{ env.REPO_NAME }}
       run: |
-        # Fetch labels from the template repository
-        LABELS=$(gh api repos/$TEMPLATE_REPO/labels --jq '.[] | @base64')
+        # Fetch labels from the current repository
+        LABELS=$(gh api repos/$GITHUB_REPOSITORY/labels --jq '.[] | @base64')
 
         # Iterate over each label and create it in the new repository
         for LABEL in $LABELS; do
