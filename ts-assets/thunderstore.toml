@@ -1,0 +1,36 @@
+[config]
+schemaVersion = "0.0.1"
+
+[general]
+repository = "https://thunderstore.io"
+
+[package]
+namespace = ""
+name = ""
+description = ""
+websiteUrl = ""
+containsNsfwContent = false
+
+[package.dependencies]
+BepInEx-BepInExPack = ""
+
+[build]
+icon = "icon.png"
+readme = "../README.md"
+outdir = "../dist"
+
+[[build.copy]]
+source = "../LICENSE"
+target = "/"
+
+[[build.copy]]
+source = "../CHANGELOG.md"
+target = "/"
+
+[[build.copy]]
+source = "../bin/Release//.dll"
+target = "/BepInEx/plugins//"
+
+[publish]
+communities = [ "" ]
+categories = [ "" ]

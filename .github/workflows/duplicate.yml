@@ -1,0 +1,95 @@
+name: Create New Repo from Template
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  create-repo:
+    if: startsWith(github.ref, 'refs/tags/latest')
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Authenticate GitHub CLI
+      run: echo "${{ secrets.GH_API_TOKEN }}" | gh auth login --with-token
+
+    - name: Extract release title and ID
+      id: extract-info
+      run: |
+        echo "REPO_NAME=${{ github.event.release.name }}" >> $GITHUB_ENV
+        echo "RELEASE_ID=${{ github.event.release.id }}" >> $GITHUB_ENV
+
+    - name: Fetch current release description
+      id: fetch-description
+      run: |
+        CURRENT_DESCRIPTION=$(gh api repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }} --jq .body)
+        echo "CURRENT_DESCRIPTION=$CURRENT_DESCRIPTION" >> $GITHUB_ENV
+
+    - name: Create new repository from template
+      id: create-repo
+      run: |
+        gh repo create "${{ env.REPO_NAME }}" --template ${{ github.repository }} --public --description "${{ env.CURRENT_DESCRIPTION }}"
+        NEW_REPO_URL=$(gh repo view "${{ env.REPO_NAME }}" --json url --jq .url)
+        NEW_REPO_OWNER=$(echo $NEW_REPO_URL | cut -d'/' -f4)
+        NEW_REPO_NAME=$(echo $NEW_REPO_URL | cut -d'/' -f5)
+        echo "NEW_REPO_FULL_NAME=$NEW_REPO_OWNER/$NEW_REPO_NAME" >> $GITHUB_ENV
+
+    - name: Retrieve secrets
+      id: retrieve-secrets
+      run: |
+        echo "TCLI_API_TOKEN=${{ secrets.TCLI_API_TOKEN }}" >> $GITHUB_ENV
+        echo "NUGET_API_TOKEN=${{ secrets.NUGET_API_TOKEN }}" >> $GITHUB_ENV
+        echo "GH_API_TOKEN=${{ secrets.GH_API_TOKEN }}" >> $GITHUB_ENV
+
+    - name: Set secrets in the new repository
+      run: |
+        gh secret set TCLI_API_TOKEN --body "${{ secrets.TCLI_API_TOKEN }}" -R ${{ env.NEW_REPO_FULL_NAME }}
+        gh secret set NUGET_API_TOKEN --body "${{ secrets.NUGET_API_TOKEN }}" -R ${{ env.NEW_REPO_FULL_NAME }}
+        gh secret set GH_API_TOKEN --body "${{ secrets.GH_API_TOKEN }}" -R ${{ env.NEW_REPO_FULL_NAME }}
+
+    - name: Delete default labels
+      run: |
+        # Fetch default labels and handle each one
+        gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels --jq '.[].name' | while IFS= read -r LABEL; do
+          LABEL_ENCODED=$(jq -rn --arg v "$LABEL" '$v|@uri')
+          echo "Deleting label: $LABEL (encoded as $LABEL_ENCODED)"
+          gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels/$LABEL_ENCODED -X DELETE
+        done
+
+    - name: Copy labels from template repository
+      run: |
+        LABELS=$(gh api repos/${{ github.repository }}/labels --jq '.[] | @base64')
+        for LABEL in $LABELS; do
+          LABEL_DATA=$(echo $LABEL | base64 --decode)
+          NAME=$(echo $LABEL_DATA | jq -r '.name')
+          COLOR=$(echo $LABEL_DATA | jq -r '.color')
+          DESCRIPTION=$(echo $LABEL_DATA | jq -r '.description')
+          gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels -f name="$NAME" -f color="$COLOR" -f description="$DESCRIPTION"
+        done
+    - name: Set default workflow permissions to Read and Write
+      run: |
+        NEW_REPO_FULL_NAME=${{ env.NEW_REPO_FULL_NAME }}
+        gh api \
+          -X PATCH \
+          -H "Accept: application/vnd.github.v3+json" \
+          repos/$NEW_REPO_FULL_NAME \
+          -f default_workflow_permissions="write"
+          
+    - name: Update release description with new repo link
+      run: |
+        NEW_REPO_URL="https://github.com/${{ env.NEW_REPO_FULL_NAME }}"
+        NEW_REPO_DESCRIPTION="## [${{ env.REPO_NAME }}]($NEW_REPO_URL)"
+        CURRENT_DESCRIPTION=$(gh api repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }} --jq .body)
+        UPDATED_DESCRIPTION="${NEW_REPO_DESCRIPTION}\n\n${CURRENT_DESCRIPTION}"
+        UPDATED_DESCRIPTION=$(echo -e "$UPDATED_DESCRIPTION")
+        gh api \
+          -X PATCH \
+          -H "Accept: application/vnd.github+json" \
+          repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }} \
+          -f body="$UPDATED_DESCRIPTION"
+
+    - name: Confirm repository creation
+      run: gh repo list --limit 5
