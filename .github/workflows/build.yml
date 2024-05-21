@@ -13,8 +13,8 @@ env:
 
 jobs:
   build:
+    if: github.repository != 'wwwwDayDream/RepositoryHub'
     name: Build
-    if: ${{ github.repository != 'wwwwDayDream/RepositoryHub' }}
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Sources
