@@ -46,8 +46,8 @@ jobs:
 
     - name: Delete default labels
       run: |
-        # Fetch default labels
-        DEFAULT_LABELS=$(gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels --jq '.[].name')
+        # Fetch default labels and handle newlines
+        DEFAULT_LABELS=$(gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels --jq '.[].name' | tr -d '\n' | xargs)
         # Loop through labels and delete each one
         for LABEL in $DEFAULT_LABELS; do
           LABEL_TRIMMED=$(echo $LABEL | xargs)  # Trim whitespace
