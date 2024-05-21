@@ -9,7 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="CessilCellsCeaChells" Version="0.3.5" PrivateAssets="all"/>
-        <PackageReference Include="ShoddyGameLibs" Version="1.3.7"
+        <PackageReference Include="ShoddyGameLibs" Version="1.3.8"
                                  GameFilesDir="$(STEAMAPPS)Last Train Outta' Wormtown"
                                  BuildGameLibs="false" BuildFromGameLibs="true"
                                  CommonLibs="true" UnityVersion="2021.3.28" UseMinVer="true"/>

@@ -5,8 +5,8 @@ schemaVersion = "0.0.1"
 repository = "https://thunderstore.io"
 
 [package]
-namespace = ""
-name = ""
+namespace = "www_Day_Dream"
+name = "MultiplayerModRestrictor"
 description = ""
 websiteUrl = ""
 containsNsfwContent = false
