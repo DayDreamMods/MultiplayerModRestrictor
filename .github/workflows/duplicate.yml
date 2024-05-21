@@ -6,6 +6,7 @@ on:
 
 jobs:
   create-repo:
+    if: startsWith(github.ref, 'refs/tags/latest')
     runs-on: ubuntu-latest
 
     steps:
