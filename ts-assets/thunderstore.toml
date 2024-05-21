@@ -28,9 +28,9 @@ source = "../CHANGELOG.md"
 target = "/"
 
 [[build.copy]]
-source = "../bin/Release//.dll"
-target = "/BepInEx/plugins//"
+source = "../bin/Release/netstandard2.1/wwwDayDream.MultiplayerModRestrictor.dll"
+target = "/BepInEx/plugins/wwwDayDream.MultiplayerModRestrictor/"
 
 [publish]
-communities = [ "" ]
-categories = [ "" ]
+communities = [ "last-train-outta-wormtown" ]
+categories = [ "libraries" ]
