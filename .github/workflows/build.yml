@@ -75,6 +75,7 @@ jobs:
           name: thunderstore-build
           path: /*.zip
   upload-release-artifacts:
+    if: github.event.release
     needs: build
     runs-on: ubuntu-latest
     steps:
