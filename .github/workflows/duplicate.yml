@@ -74,23 +74,19 @@ jobs:
         TEMPLATE_REPO=${{ github.repository }}
         NEW_REPO_FULL_NAME=${{ env.NEW_REPO_FULL_NAME }}
         
-        # Fetch list of ruleset files from the template repository
-        RULESETS=$(gh api repos/$TEMPLATE_REPO/contents --jq '.[] | select(.name | endswith(".ruleset")) | @base64')
+        # Fetch list of rulesets from the template repository
+        RULESETS=$(gh api repos/$TEMPLATE_REPO/rulesets --jq '.[] | @base64')
         
-        # Iterate over each ruleset file and create it in the new repository
+        # Iterate over each ruleset and create it in the new repository
         for RULESET in $RULESETS; do
           RULESET_DATA=$(echo $RULESET | base64 --decode)
-          FILE_NAME=$(echo $RULESET_DATA | jq -r '.name')
-          CONTENT_URL=$(echo $RULESET_DATA | jq -r '.download_url')
+          RULESET_NAME=$(echo $RULESET_DATA | jq -r '.name')
+          RULESET_BODY=$(echo $RULESET_DATA | jq -r '.body')
           
-          # Download the content of the ruleset file
-          FILE_CONTENT=$(curl -sL $CONTENT_URL | base64 -w 0)
-          
-          # Create the ruleset file in the new repository
-          gh api repos/$NEW_REPO_FULL_NAME/contents/$FILE_NAME \
-            -f message="Add $FILE_NAME" \
-            -f content=$FILE_CONTENT \
-            -f branch=main
+          # Create the ruleset in the new repository
+          gh api repos/$NEW_REPO_FULL_NAME/rulesets \
+            -f name="$RULESET_NAME" \
+            -f body="$RULESET_BODY"
         done
         
     - name: Update release description with new repo link
