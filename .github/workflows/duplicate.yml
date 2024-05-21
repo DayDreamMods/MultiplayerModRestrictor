@@ -81,12 +81,15 @@ jobs:
         for RULESET in $RULESETS; do
           RULESET_DATA=$(echo $RULESET | base64 --decode)
           RULESET_NAME=$(echo $RULESET_DATA | jq -r '.name')
-          RULESET_BODY=$(echo $RULESET_DATA | jq -r '.body')
+          RULESET_TARGET=$(echo $RULESET_DATA | jq -r '.target')
+          RULESET_RULES=$(echo $RULESET_DATA | jq -r '.rules')
           
           # Create the ruleset in the new repository
           gh api repos/$NEW_REPO_FULL_NAME/rulesets \
             -f name="$RULESET_NAME" \
-            -f body="$RULESET_BODY"
+            -f target="$RULESET_TARGET" \
+            -f enforcement="active" \
+            -f rules="$RULESET_RULES"
         done
         
     - name: Update release description with new repo link
