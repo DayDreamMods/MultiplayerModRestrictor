@@ -28,7 +28,7 @@ source = "../CHANGELOG.md"
 target = "/"
 
 [[build.copy]]
-source = "../bin/Release/netstandard2.1/wwwDayDream.MultiplayerModRestrictor.dll"
+source = "../MultiplayerModRestrictor/bin/Release/netstandard2.1/wwwDayDream.MultiplayerModRestrictor.dll"
 target = "/BepInEx/plugins/wwwDayDream.MultiplayerModRestrictor/"
 
 [publish]
