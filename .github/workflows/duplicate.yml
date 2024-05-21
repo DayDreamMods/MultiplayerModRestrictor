@@ -50,8 +50,9 @@ jobs:
         DEFAULT_LABELS=$(gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels --jq '.[].name')
         # Loop through labels and delete each one
         for LABEL in $DEFAULT_LABELS; do
-          echo "Deleting label: $LABEL"
-          gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels/$(echo $LABEL | jq -sRr @uri) -X DELETE
+          LABEL_ENCODED=$(echo $LABEL | jq -sRr @uri)
+          echo "Deleting label: $LABEL (encoded as $LABEL_ENCODED)"
+          gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels/$LABEL_ENCODED -X DELETE
         done
 
     - name: Copy labels from template repository
