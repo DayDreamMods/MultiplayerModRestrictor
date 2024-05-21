@@ -76,19 +76,27 @@ jobs:
         
         # Fetch list of rulesets from the template repository
         RULESETS=$(gh api repos/$TEMPLATE_REPO/rulesets --jq '.[] | @base64')
-        
+    
         # Iterate over each ruleset and create it in the new repository
         for RULESET in $RULESETS; do
           RULESET_DATA=$(echo $RULESET | base64 --decode)
           RULESET_NAME=$(echo $RULESET_DATA | jq -r '.name')
           RULESET_TARGET=$(echo $RULESET_DATA | jq -r '.target')
           RULESET_ENFORCEMENT=$(echo $RULESET_DATA | jq -r '.enforcement')
+          RULESET_CONDITIONS=$(echo $RULESET_DATA | jq -c '.conditions')
+          RULESET_RULES=$(echo $RULESET_DATA | jq -c '.rules')
         
+          # Construct the JSON payload
+          PAYLOAD=$(jq -n \
+            --arg name "$RULESET_NAME" \
+            --arg target "$RULESET_TARGET" \
+            --arg enforcement "$RULESET_ENFORCEMENT" \
+            --argjson conditions "$RULESET_CONDITIONS" \
+            --argjson rules "$RULESET_RULES" \
+            '{name: $name, target: $target, enforcement: $enforcement, conditions: $conditions, rules: $rules}')
+          
           # Create the ruleset in the new repository with enforcement set to active
-          gh api repos/$NEW_REPO_FULL_NAME/rulesets \
-            -f name="$RULESET_NAME" \
-            -f target="$RULESET_TARGET" \
-            -f enforcement="active" \
+          gh api repos/$NEW_REPO_FULL_NAME/rulesets -f data="$PAYLOAD"
         done
         
     - name: Update release description with new repo link
