@@ -75,13 +75,12 @@ jobs:
         NEW_REPO_DESCRIPTION="New repository created: [${{ env.REPO_NAME }}]($NEW_REPO_URL)"
         CURRENT_DESCRIPTION=$(gh api repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }} --jq .body)
         UPDATED_DESCRIPTION="${CURRENT_DESCRIPTION}\n\n${NEW_REPO_DESCRIPTION}"
-        echo -e "CURRENT_DESCRIPTION=${CURRENT_DESCRIPTION}" >> $GITHUB_ENV
-        echo -e "UPDATED_DESCRIPTION=${UPDATED_DESCRIPTION}" >> $GITHUB_ENV
+        UPDATED_DESCRIPTION=$(echo -e "$UPDATED_DESCRIPTION")
         gh api \
           -X PATCH \
           -H "Accept: application/vnd.github+json" \
           repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }} \
-          -f body="${UPDATED_DESCRIPTION}"
+          -f body="$UPDATED_DESCRIPTION"
 
     - name: Confirm repository creation
       run: gh repo list --limit 5
