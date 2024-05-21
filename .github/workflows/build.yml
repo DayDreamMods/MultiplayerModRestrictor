@@ -25,12 +25,40 @@ jobs:
 
       - name: "Build Changelog"
         uses: mikepenz/release-changelog-builder-action@v4
+        if: github.event_name != 'release'
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           outputFile: "CHANGELOG.md"
           includeOpen: true
           ignorePreReleases: true
           toTag: ${{ github.ref }}
+          configurationJson: |
+            {
+              "template": "# ${{ github.event.repository.name }} - ${{ github.ref }}\n\n#{{CHANGELOG}}\n\n### Misc\n---\n#{{UNCATEGORIZED}}\n\nFull Changelog: [#{{FROM_TAG}}...#{{TO_TAG}}](#{{RELEASE_DIFF}})",
+              "pr_template": "* #{{TITLE}} by [@#{{AUTHOR}}](https://github.com/#{{AUTHOR}}) in [##{{NUMBER}}](#{{URL}})",
+              "categories": [
+                {
+                    "title": "## Features",
+                    "labels": ["Feature"]
+                },
+                {
+                    "title": "## Fixes",
+                    "labels": ["Fix"]
+                },
+                {
+                    "title": "## Documentation",
+                    "labels": ["Documentation"]
+                }
+              ]
+            }
+
+      - name: "Build Changelog"
+        uses: mikepenz/release-changelog-builder-action@v4
+        if: github.event_name == 'release' && github.event.release.prerelease == false
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          outputFile: "CHANGELOG.md"
+          ignorePreReleases: true
           configurationJson: |
             {
               "template": "# ${{ github.event.repository.name }} - ${{ github.ref_name }}\n\n#{{CHANGELOG}}\n\n### Misc\n---\n#{{UNCATEGORIZED}}\n\nFull Changelog: [#{{FROM_TAG}}...#{{TO_TAG}}](#{{RELEASE_DIFF}})",
