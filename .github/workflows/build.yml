@@ -13,7 +13,7 @@ env:
 
 jobs:
   build:
-    if: github.repository != 'wwwwDayDream/RepositoryHub'
+    if: ${{ github.repository != 'wwwwDayDream/RepositoryHub' }}
     name: Build
     runs-on: ubuntu-latest
     steps:
