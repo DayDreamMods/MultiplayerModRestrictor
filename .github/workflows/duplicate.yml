@@ -69,12 +69,36 @@ jobs:
           gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels -f name="$NAME" -f color="$COLOR" -f description="$DESCRIPTION"
         done
 
+    - name: Copy rulesets from template repository
+      run: |
+        TEMPLATE_REPO=${{ github.repository }}
+        NEW_REPO_FULL_NAME=${{ env.NEW_REPO_FULL_NAME }}
+        
+        # Fetch list of ruleset files from the template repository
+        RULESETS=$(gh api repos/$TEMPLATE_REPO/contents --jq '.[] | select(.name | endswith(".ruleset")) | @base64')
+        
+        # Iterate over each ruleset file and create it in the new repository
+        for RULESET in $RULESETS; do
+          RULESET_DATA=$(echo $RULESET | base64 --decode)
+          FILE_NAME=$(echo $RULESET_DATA | jq -r '.name')
+          CONTENT_URL=$(echo $RULESET_DATA | jq -r '.download_url')
+          
+          # Download the content of the ruleset file
+          FILE_CONTENT=$(curl -sL $CONTENT_URL | base64 -w 0)
+          
+          # Create the ruleset file in the new repository
+          gh api repos/$NEW_REPO_FULL_NAME/contents/$FILE_NAME \
+            -f message="Add $FILE_NAME" \
+            -f content=$FILE_CONTENT \
+            -f branch=main
+        done
+        
     - name: Update release description with new repo link
       run: |
         NEW_REPO_URL="https://github.com/${{ env.NEW_REPO_FULL_NAME }}"
-        NEW_REPO_DESCRIPTION="New repository created: [${{ env.REPO_NAME }}]($NEW_REPO_URL)"
+        NEW_REPO_DESCRIPTION="## [${{ env.REPO_NAME }}]($NEW_REPO_URL)"
         CURRENT_DESCRIPTION=$(gh api repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }} --jq .body)
-        UPDATED_DESCRIPTION="${CURRENT_DESCRIPTION}\n\n${NEW_REPO_DESCRIPTION}"
+        UPDATED_DESCRIPTION="${NEW_REPO_DESCRIPTION}\n\n${CURRENT_DESCRIPTION}"
         UPDATED_DESCRIPTION=$(echo -e "$UPDATED_DESCRIPTION")
         gh api \
           -X PATCH \
