@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -13,13 +14,6 @@ namespace MultiplayerModRestrictor;
 internal class MMReqVersion : Attribute {}
 [AttributeUsage(AttributeTargets.Class)]
 internal class MMReqExist : Attribute {}
-
-[Serializable]
-public class ModData {
-    public string ModGUID;
-    public string ModName;
-    public string ModVersion;
-}
 
 [MMReqVersion] [MMReqExist]
 [BepInAutoPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
@@ -70,5 +64,29 @@ public partial class MultiplayerModRestrictor : BaseUnityPlugin {
     {
         var jsonData = JsonConvert.SerializeObject(ModDatas);
         return jsonData;
+    }
+
+    public static bool CompareModDatas(string modDataJson, out string error)
+    {        
+        var modDatas = !string.IsNullOrEmpty(modDataJson) ? 
+            JsonConvert.DeserializeObject<ModData[]>(modDataJson) ?? [] : [];
+
+        var canJoin = true;
+        var reasonSB = new StringBuilder("Requires:\n");
+        foreach (var modData in ModDatas)
+        {
+            var potentialClientMatch = modDatas.FirstOrDefault(data => modData.ModGUID == data.ModGUID);
+            var clientMatchesVersion = potentialClientMatch?.ModVersion == modData.ModVersion;
+            
+            if (potentialClientMatch != null && clientMatchesVersion) continue;
+            
+            canJoin = false;
+            reasonSB.AppendLine(potentialClientMatch != null
+                ? $"Version Mismatch: {modData.ModName} v{modData.ModVersion} (v{potentialClientMatch.ModVersion})"
+                : $"Missing Mod: {modData.ModName} v{modData.ModVersion}");
+        }
+
+        error = reasonSB.ToString().TrimEnd('\n', '\r');
+        return canJoin;
     }
 }

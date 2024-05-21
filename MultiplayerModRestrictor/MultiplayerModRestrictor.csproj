@@ -17,6 +17,9 @@
         <Reference Include="..\..\BepInEx\cache\Cessil.Assembly-CSharp" ShoddyGameLib="true" Publicize="true"/>
         <Reference Include="Newtonsoft.Json" ShoddyGameLib="true"/>
         <Reference Include="Unity.Netcode.Runtime" ShoddyGameLib="true"/>
+        <Reference Include="UnityEngine.UI" ShoddyGameLib="true"/>
+        <Reference Include="Unity.TextMeshPro" ShoddyGameLib="true"/>
+        <Reference Include="com.rlabrecque.steamworks.net" ShoddyGameLib="true"/>
     </ItemGroup>
 
 </Project>

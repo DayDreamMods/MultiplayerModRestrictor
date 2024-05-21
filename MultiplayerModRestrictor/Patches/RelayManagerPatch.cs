@@ -59,26 +59,9 @@ public static class RelayManagerPatch {
             return;
         }
         
-        var modDatas = !string.IsNullOrEmpty(connectionPayload.MMRestrictorVersions) ? 
-            JsonConvert.DeserializeObject<ModData[]>(connectionPayload.MMRestrictorVersions) ?? [] : [];
-
-        var canJoin = true;
-        var reasonSB = new StringBuilder("Requires:\n");
-        foreach (var modData in MultiplayerModRestrictor.ModDatas)
+        if (!MultiplayerModRestrictor.CompareModDatas(connectionPayload.MMRestrictorVersions, out var err))
         {
-            var potentialClientMatch = modDatas.FirstOrDefault(data => modData.ModGUID == data.ModGUID);
-            var clientMatchesVersion = potentialClientMatch?.ModVersion == modData.ModVersion;
-            
-            if (potentialClientMatch != null && clientMatchesVersion) continue;
-            
-            canJoin = false;
-            reasonSB.AppendLine(potentialClientMatch != null
-                ? $"Version Mismatch: {modData.ModName} v{modData.ModVersion} (v{potentialClientMatch.ModVersion})"
-                : $"Missing Mod: {modData.ModName} v{modData.ModVersion}");
-        }
-        if (!canJoin)
-        {
-            response.Reason = reasonSB.ToString().TrimEnd('\n', '\r');
+            response.Reason = err;
             response.Approved = false;
         }
     }
