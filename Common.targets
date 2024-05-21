@@ -1,5 +1,10 @@
 <Project>
     <PropertyGroup>
+        <UseMinVer>true</UseMinVer>
+        <UnityVersion>x.x.x</UnityVersion>
+    </PropertyGroup>
+    
+    <PropertyGroup>
         <Product>$(MSBuildProjectName)</Product>
         <!-- Set NuGet Sources -->
         <RestoreAdditionalProjectSources>
