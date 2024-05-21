@@ -46,12 +46,10 @@ jobs:
 
     - name: Delete default labels
       run: |
-        # Fetch default labels and handle newlines
-        DEFAULT_LABELS=$(gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels --jq '.[].name' | tr -d '\n' | xargs)
-        # Loop through labels and delete each one
-        for LABEL in $DEFAULT_LABELS; do
-          LABEL_TRIMMED=$(echo $LABEL | xargs)  # Trim whitespace
-          LABEL_ENCODED=$(echo $LABEL_TRIMMED | jq -sRr @uri)
+        # Fetch default labels
+        gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels --jq '.[].name' | while read -r LABEL; do
+          LABEL_TRIMMED=$(echo "$LABEL" | xargs)  # Trim whitespace
+          LABEL_ENCODED=$(echo "$LABEL_TRIMMED" | jq -sRr @uri)
           echo "Deleting label: $LABEL_TRIMMED (encoded as $LABEL_ENCODED)"
           gh api repos/${{ env.NEW_REPO_FULL_NAME }}/labels/$LABEL_ENCODED -X DELETE
         done
