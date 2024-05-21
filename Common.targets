@@ -55,8 +55,12 @@
             Condition="$(Configuration) == 'Release' and '$(CI)' == 'true'"
             DependsOnTargets="SetModVersion"
     >
-        <Exec Command="echo &quot;dotnet tcli public --config-path $(MSBuildProjectDirectory)\..\ts-assets\thunderstore.toml --file $(MSBuildProjectDirectory)\..\*.zip&quot;" />
-    </Target>
+        <Exec Command="dotnet tcli build --config-path $(MSBuildProjectDirectory)\..\ts-assets\thunderstore.toml --package-version $(PlainVersion)" />
+        <ItemGroup>
+            <FilesToRename Include="$(MSBuildProjectDirectory)\..\*-$(PlainVersion).zip" />
+        </ItemGroup>
+        <Move SourceFiles="@(FilesToRename)" DestinationFiles="@(FilesToRename -&gt; Replace($(PlainVersion), $(MinVerVersion)))" />
+        </Target>
     
     <!-- Publish to Thunderstore -->
     <Target
@@ -64,11 +68,7 @@
             AfterTargets="PostBuildEvent;ThunderstorePack"
             Condition="$(Configuration) == 'Release' and '$(CI)' == 'true' and $(IS_RELEASE) == 'true'"
     >
-        <Exec Command="dotnet tcli build --config-path $(MSBuildProjectDirectory)\..\ts-assets\thunderstore.toml --package-version $(PlainVersion)" />
-        <ItemGroup>
-            <FilesToRename Include="$(MSBuildProjectDirectory)\..\*-$(PlainVersion).zip" />
-        </ItemGroup>
-        <Move SourceFiles="@(FilesToRename)" DestinationFiles="@(FilesToRename -&gt; Replace($(PlainVersion), $(MinVerVersion)))" />
+        <Exec Command="dotnet tcli publish --config-path $(MSBuildProjectDirectory)\..\ts-assets\thunderstore.toml --file $(MSBuildProjectDirectory)\..\*.zip" />
     </Target>
 
 </Project>
