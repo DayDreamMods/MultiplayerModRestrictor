@@ -5,8 +5,8 @@ schemaVersion = "0.0.1"
 repository = "https://thunderstore.io"
 
 [package]
-namespace = ""
-name = ""
+namespace = "www_Day_Dream"
+name = "MultiplayerModRestrictor"
 description = ""
 websiteUrl = ""
 containsNsfwContent = false
@@ -16,8 +16,8 @@ BepInEx-BepInExPack = ""
 
 [build]
 icon = "icon.png"
-readme = "../README.md"
-outdir = "../dist"
+readme = "./TS-README.md"
+outdir = "../"
 
 [[build.copy]]
 source = "../LICENSE"
@@ -28,9 +28,9 @@ source = "../CHANGELOG.md"
 target = "/"
 
 [[build.copy]]
-source = "../bin/Release//.dll"
-target = "/BepInEx/plugins//"
+source = "../MultiplayerModRestrictor/bin/Release/netstandard2.1/wwwDayDream.MultiplayerModRestrictor.dll"
+target = "/BepInEx/plugins/wwwDayDream.MultiplayerModRestrictor/"
 
 [publish]
-communities = [ "" ]
-categories = [ "" ]
+communities = [ "last-train-outta-wormtown" ]
+categories = [ "libraries" ]

@@ -9,10 +9,9 @@
 
     <ItemGroup>
         <PackageReference Include="CessilCellsCeaChells" Version="0.3.5" PrivateAssets="all"/>
-        <PackageReference Include="ShoddyGameLibs" Version="1.3.7"
+        <PackageReference Include="ShoddyGameLibs" Version="1.3.9"
                                  GameFilesDir="$(STEAMAPPS)Last Train Outta' Wormtown"
-                                 BuildGameLibs="false" BuildFromGameLibs="true"
-                                 CommonLibs="true" UnityVersion="2021.3.28" UseMinVer="true"/>
+                                 BuildGameLibs="false" BuildFromGameLibs="true"/>
 
         <Reference Include="..\..\BepInEx\cache\Cessil.Assembly-CSharp" ShoddyGameLib="true" Publicize="true"/>
         <Reference Include="Newtonsoft.Json" ShoddyGameLib="true"/>
@@ -22,4 +21,5 @@
         <Reference Include="com.rlabrecque.steamworks.net" ShoddyGameLib="true"/>
     </ItemGroup>
 
+    <Import Project="../Common.targets"/>
 </Project>

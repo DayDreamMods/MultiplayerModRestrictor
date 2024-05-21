@@ -1,0 +1,65 @@
+<Project>
+    <PropertyGroup>
+        <UseMinVer>true</UseMinVer>
+        <UnityVersion>2021.3.28</UnityVersion>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <Product>$(MSBuildProjectName)</Product>
+        <!-- Set NuGet Sources -->
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+            https://nuget.bepinex.dev/v3/index.json
+        </RestoreAdditionalProjectSources>
+
+        <!-- Set MinVer Tag & Prerelease Properties -->
+        <MinVerDefaultPreReleaseIdentifiers>dev</MinVerDefaultPreReleaseIdentifiers>
+        <MinVerTagPrefix>v</MinVerTagPrefix>
+
+        <!-- Embed Debug Symbols for Easier Debugging -->
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>embedded</DebugType>
+        <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)'))=./</PathMap>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Condition="'$(UseMinVer)' == 'true'"  Include="MinVer" Version="5.0.0" PrivateAssets="all"/>
+
+        <PackageReference Include="BepInEx.Core" Version="5.*" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.AutoPlugin" Version="1.1.0" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.0.0" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" PrivateAssets="all"/>
+
+        <PackageReference Include="UnityEngine.Modules" Version="$(UnityVersion)" PrivateAssets="all" IncludeAssets="compile"/>
+    </ItemGroup>
+
+    <Target Name="SetAssemblyVersion" AfterTargets="MinVer" >
+        <PropertyGroup>
+            <AssemblyVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch).0</AssemblyVersion>
+        </PropertyGroup>
+    </Target>
+
+    <!-- Set Mod Version with MinVer -->
+    <Target Name="SetModVersion" BeforeTargets="AddGeneratedFile" DependsOnTargets="MinVer">
+        <PropertyGroup>
+            <PlainVersion>$(MinVerMajor).$(MinVerMinor).$(MinVerPatch)</PlainVersion>
+            <BepInExPluginVersion>$(PlainVersion)</BepInExPluginVersion>
+        </PropertyGroup>
+    </Target>
+
+    <!-- Pack for Thunderstore -->
+    <Target
+            Name="ThunderstorePack"
+            AfterTargets="PostBuildEvent"
+            Condition="$(Configuration) == 'Release' and '$(CI)' == 'true'"
+            DependsOnTargets="SetModVersion"
+    >
+        <Exec Command="dotnet tcli build --config-path $(MSBuildProjectDirectory)\..\ts-assets\thunderstore.toml --package-version $(PlainVersion)" />
+        <ItemGroup>
+            <FilesToRename Include="$(MSBuildProjectDirectory)\..\*-$(PlainVersion).zip" />
+        </ItemGroup>
+        <Move SourceFiles="@(FilesToRename)" DestinationFiles="@(FilesToRename -&gt; Replace($(PlainVersion), $(MinVerVersion)))" />
+    </Target>
+
+</Project>
